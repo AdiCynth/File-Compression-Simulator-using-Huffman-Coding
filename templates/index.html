@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Compression Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .input-textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-compress {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-compress:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .btn-compress:active {
+            transform: translateY(0);
+        }
+
+        .btn-compress:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .stat-card.red {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.orange {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .codes-section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .codes-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .codes-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .codes-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .codes-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .codes-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .codes-table tbody tr {
+            background: #f7fafc;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: slideIn 0.4s ease;
+        }
+
+        .codes-table tbody tr:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .codes-table td {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .codes-table td:first-child {
+            border-left: 1px solid #e2e8f0;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .codes-table td:last-child {
+            border-right: 1px solid #e2e8f0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .char-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f5576c;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .code-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .freq-display {
+            font-size: 1.1rem;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .freq-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 4px;
+            margin-top: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #f56565;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗜️ Huffman Compression Simulator</h1>
+            <p>Visualize data compression using Huffman coding algorithm</p>
+        </div>
+
+        <div class="main-card">
+            <div class="input-section">
+                <label class="input-label">Enter Text to Compress:</label>
+                <textarea id="inputText" class="input-textarea" placeholder="Type or paste your text here..."></textarea>
+            </div>
+
+            <button id="compressBtn" class="btn-compress">Compress Text</button>
+
+            <div class="loader" id="loader"></div>
+
+            <div id="errorMessage"></div>
+
+            <div class="results-section" id="results">
+                <div class="stats-grid">
+                    <div class="stat-card red">
+                        <div class="stat-label">Original Size</div>
+                        <div class="stat-value" id="originalBits">0</div>
+                        <div style="font-size: 0.9rem; margin-top: 5px;">bits</div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-label">Compressed Size</div>
+                        <div class="stat-value" id="compressedBits">0</div>
+                        <div style="font-size: 0.9rem; margin-top: 5px;">bits</div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="stat-label">Compression Ratio</div>
+                        <div class="stat-value" id="compressionRatio">0</div>
+                        <div style="font-size: 0.9rem; margin-top: 5px;">times</div>
+                    </div>
+                </div>
+
+                <div class="codes-section">
+                    <h2 class="section-title">Huffman Codes</h2>
+                    <table class="codes-table">
+                        <thead>
+                            <tr>
+                                <th>Character</th>
+                                <th>Huffman Code</th>
+                                <th>Frequency</th>
+                                <th>Frequency Bar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const compressBtn = document.getElementById('compressBtn');
+        const inputText = document.getElementById('inputText');
+        const loader = document.getElementById('loader');
+        const results = document.getElementById('results');
+        const errorMessage = document.getElementById('errorMessage');
+
+        compressBtn.addEventListener('click', async () => {
+            const text = inputText.value.trim();
+            
+            if (!text) {
+                showError('Please enter some text to compress');
+                return;
+            }
+
+            compressBtn.disabled = true;
+            loader.style.display = 'block';
+            results.style.display = 'none';
+            errorMessage.innerHTML = '';
+
+            try {
+                const response = await fetch('/compress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Compression failed');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                compressBtn.disabled = false;
+                loader.style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            document.getElementById('originalBits').textContent = data.original_bits;
+            document.getElementById('compressedBits').textContent = data.compressed_bits;
+            document.getElementById('compressionRatio').textContent = data.compression_ratio.toFixed(2);
+
+            const tableBody = document.getElementById('codesTableBody');
+            tableBody.innerHTML = '';
+
+            const maxFreq = Math.max(...data.codes.map(c => c.freq));
+
+            data.codes.forEach(code => {
+                const row = document.createElement('tr');
+                const barWidth = (code.freq / maxFreq) * 100;
+
+                let charDisplay = code.char;
+                if (code.char === ' ') charDisplay = 'SPACE';
+                else if (code.char === '\n') charDisplay = 'NEWLINE';
+                else if (code.char === '\t') charDisplay = 'TAB';
+
+                row.innerHTML = `
+                    <td><span class="char-display">${charDisplay}</span></td>
+                    <td><span class="code-display">${code.code}</span></td>
+                    <td><span class="freq-display">${code.freq}</span></td>
+                    <td>
+                        <div class="freq-bar" style="width: ${barWidth}%"></div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            results.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+        }
+    </script>
+</body>
+</html>
+
